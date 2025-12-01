@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دفتر التحضير الرقمي - مدرسة القرآن</title>
+    <!-- مكتبة لتصدير الصور -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- مكتبة الأيقونات الاحترافية (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-brown: #4b2e2a;
+            --border-color: #6d4c41;
+            --page-bg: #f3e5ab;
+            --header-bg: #e6d2b5;
+            --highlight-bg: #e8dcc5; 
+            --box-bg: #faf0e6;
+            --pen-color: #1a237e; /* لون أزرق حبري للكتابة */
+            --placeholder-color: #8d6e63;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            font-family: 'Amiri', serif;
+            background-color: #2b1d1a;
+            margin: 0;
+            padding: 20px;
+            padding-top: 80px; /* مساحة لشريط الأدوات */
+            color: #3e2723;
+            font-size: 16px;
+        }
+
+        /* --- Toolbar Styles (Non-printable) --- */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #3e2723;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            z-index: 1000;
+            border-bottom: 3px solid #6d4c41;
+        }
+
+        .btn {
+            background: #d7ccc8;
+            color: #3e2723;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px; /* حواف أزرار أنعم */
+            cursor: pointer;
+            font-family: 'Reem Kufi', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* مسافة أفضل بين الأيقونة والنص */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .btn i {
+            font-size: 18px; /* حجم الأيقونات */
+        }
+
+        .btn:hover {
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger { background: #ffccbc; color: #b71c1c; }
+        .btn-success { background: #c8e6c9; color: #1b5e20; }
+        .btn-primary { background: #bbdefb; color: #0d47a1; }
+
+        /* --- Page Container --- */
+        #pages-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .page-wrapper {
+            position: relative;
+        }
+
+        .delete-page-btn {
+            position: absolute;
+            top: 15px;
+            left: -50px;
+            background: #b71c1c;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        
+        .delete-page-btn:hover {
+            transform: scale(1.1);
+            background: #d32f2f;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm 15mm;
+            background-color: var(--page-bg);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            border: 1px solid #c0a080;
+            position: relative;
+            filter: sepia(0.25); 
+            margin: 0 auto;
+            border-radius: 20px; /* حواف الصفحة مقوسة */
+            overflow: hidden; /* لضمان قص الخلفية عند الحواف */
+        }
+
+        /* --- Input Styling (Invisible but writable) --- */
+        input[type="text"], textarea {
+            background: transparent;
+            border: none;
+            font-family: 'Amiri', serif;
+            font-size: 16px;
+            color: var(--pen-color); /* لون الكتابة */
+            width: 100%;
+            outline: none;
+            padding: 0 5px;
+        }
+
+        /* تخصيص المدخلات لتشبه الخطوط */
+        .input-line {
+            border-bottom: 1px dotted #3e2723;
+            height: 24px;
+        }
+        
+        .input-line:focus {
+            background-color: rgba(255,255,255,0.2);
+            border-bottom: 1px solid var(--pen-color);
+        }
+
+        /* مساحات صغيرة */
+        .input-inline {
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* --- Existing Design Styles (Preserved) --- */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--primary-brown);
+            padding-bottom: 10px;
+        }
+
+        .header-right { text-align: center; width: 25%; }
+        .header-center { text-align: center; flex-grow: 1; }
+        .header-left { width: 25%; text-align: center; display: flex; justify-content: center; align-items: center; }
+
+        .school-logo-text {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 3px double var(--primary-brown);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; font-family: 'Aref Ruqaa', serif;
+            color: var(--primary-brown); background: rgba(255,255,255,0.25);
+            padding: 2px; line-height: 1.1; transform: rotate(-5deg);
+        }
+
+        .logo-line-1 { font-size: 12px; }
+        .logo-line-2 { font-size: 16px; font-weight: 700; }
+        .logo-line-3 { font-size: 10px; margin-top: 2px; }
+
+        .basmala { font-family: 'Reem Kufi', sans-serif; font-size: 26px; font-weight: 700; color: var(--primary-brown); }
+        .school-name { font-family: 'Reem Kufi', sans-serif; font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--primary-brown); }
+
+        .info-section { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; }
+        .info-col { width: 48%; }
+        .info-row { display: flex; align-items: center; margin-bottom: 5px; }
+        .info-row label { font-weight: 700; white-space: nowrap; margin-left: 5px; }
+
+        .date-box {
+            border: 2px solid var(--primary-brown); border-radius: 15px;
+            padding: 8px 15px; margin-bottom: 15px; background-color: rgba(255,255,255,0.2);
+        }
+
+        .main-title {
+            text-align: center; background-color: rgba(62, 39, 35, 0.1);
+            border: 2px solid var(--primary-brown); border-radius: 12px;
+            padding: 5px; font-family: 'Reem Kufi', sans-serif; font-size: 18px;
+            font-weight: 700; width: 100%; margin-bottom: 5px; color: var(--primary-brown);
+        }
+
+        table.curriculum-table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            border: 2px solid var(--primary-brown); border-radius: 15px;
+            overflow: hidden; margin-bottom: 15px;
+        }
+
+        .curriculum-table th, .curriculum-table td {
+            padding: 5px; vertical-align: middle;
+            border-left: 1px solid var(--primary-brown); border-bottom: 1px solid var(--primary-brown);
+        }
+
+        .curriculum-table th {
+            background-color: var(--header-bg); font-weight: 700; text-align: center;
+            font-family: 'Reem Kufi', sans-serif; color: var(--primary-brown);
+            border-bottom: 2px solid var(--primary-brown);
+        }
+
+        .curriculum-table th:last-child, .curriculum-table td:last-child { border-left: none; }
+        .curriculum-table tr:last-child td { border-bottom: none; }
+
+        .col-time { width: 8%; text-align: center; font-weight: bold; }
+        .col-curriculum { width: 18%; text-align: center; font-weight: bold; font-size: 14px; }
+        .col-topic { width: 74%; }
+
+        .bg-highlight { background-color: var(--highlight-bg); }
+
+        .next-lesson-container {
+            border: 2px solid var(--primary-brown); border-radius: 15px;
+            margin-bottom: 15px; overflow: hidden;
+        }
+
+        .next-lesson-header {
+            text-align: center; font-family: 'Reem Kufi', sans-serif; font-weight: 700;
+            background-color: rgba(255,255,255,0.3); padding: 5px;
+            border-bottom: 1px solid var(--primary-brown); color: var(--primary-brown);
+        }
+
+        .next-lesson-row { display: flex; border-bottom: 1px solid var(--primary-brown); }
+        .next-lesson-row:last-child { border-bottom: none; }
+
+        .nl-label {
+            width: 15%; background-color: rgba(62, 39, 35, 0.05);
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+            border-left: 1px solid var(--primary-brown); padding: 5px; font-size: 15px;
+            color: var(--primary-brown);
+        }
+        .nl-content { width: 85%; padding: 5px 10px; }
+
+        .supervisor-box {
+            border: 2px solid var(--primary-brown); border-radius: 15px;
+            padding: 15px; position: relative; min-height: 100px; margin-top: 10px;
+        }
+        .supervisor-title {
+            position: absolute; top: -14px; right: 25px; background: var(--page-bg);
+            padding: 0 10px; font-family: 'Reem Kufi', sans-serif; font-weight: 700;
+            color: var(--primary-brown); font-size: 16px;
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background-color: #fff; padding: 0; margin: 0; }
+            .toolbar, .delete-page-btn { display: none !important; }
+            .page { 
+                background-color: var(--page-bg) !important;
+                filter: sepia(0.25) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: none; box-shadow: none; margin: 0 auto;
+                page-break-after: always;
+                width: 210mm; height: 297mm;
+                border-radius: 0; /* إلغاء التقوس عند الطباعة لملء الصفحة بالكامل */
+            }
+            .page-wrapper { margin-bottom: 0; }
+            /* إخفاء حدود المدخلات عند الطباعة لتبدو كجزء من التصميم */
+            input, textarea { border-bottom: none !important; }
+            /* إعادة رسم الخطوط المنقطة كخلفية عند الطباعة إذا اختفت، أو الاعتماد على أن الـ input شفاف */
+            .input-line { border-bottom: 1px dotted #3e2723 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toolbar with Professional Icons -->
+    <div class="toolbar">
+        <button class="btn btn-primary" onclick="addNewPage()">
+            <i class="ph ph-plus-circle"></i> صفحة جديدة
+        </button>
+        <button class="btn btn-danger" onclick="clearAll()">
+            <i class="ph ph-eraser"></i> مسح الكل
+        </button>
+        <div style="width: 1px; height: 30px; background: #8d6e63; opacity: 0.5;"></div>
+        <button class="btn" onclick="saveToLocal()">
+            <i class="ph ph-floppy-disk"></i> حفظ مؤقت
+        </button>
+        <button class="btn" onclick="loadFromLocal()">
+            <i class="ph ph-folder-open"></i> استرجاع
+        </button>
+        <div style="width: 1px; height: 30px; background: #8d6e63; opacity: 0.5;"></div>
+        <button class="btn btn-success" onclick="exportPDF()">
+            <i class="ph ph-printer"></i> طباعة / PDF
+        </button>
+        <button class="btn" onclick="exportPNG()">
+            <i class="ph ph-image"></i> حفظ كصورة
+        </button>
+    </div>
+
+    <div id="pages-container">
+        <!-- سيتم استنساخ هذا القالب -->
+        <div class="page-wrapper" id="page-template">
+            <!-- زر حذف الصفحة مع أيقونة -->
+            <button class="delete-page-btn" onclick="deletePage(this)" style="display: none;" title="حذف الصفحة">
+                <i class="ph ph-trash" style="font-size: 18px;"></i>
+            </button>
+            
+            <div class="page">
+                <!-- Header -->
+                <div class="header-container">
+                    <div class="header-right">
+                        <div class="school-name">مدرسة القرآن<br>بمنشأة سلطان</div>
+                    </div>
+                    <div class="header-center">
+                        <div class="basmala">بسم الله الرحمن الرحيم</div>
+                    </div>
+                    <div class="header-left">
+                        <div class="school-logo-text">
+                            <div class="logo-line-1">مدرسة</div>
+                            <div class="logo-line-2">القرآن</div>
+                            <div class="logo-line-3">بمنشأة سلطان</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Fields -->
+                <div class="info-section">
+                    <div class="info-col">
+                        <div class="info-row">
+                            <label>رقم المجموعة:</label> 
+                            <input type="text" class="input-line" style="flex-grow: 1;">
+                            <span style="margin: 0 5px;">(</span> <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> <span>)</span>
+                        </div>
+                        <div class="info-row">
+                            <label>الفرقة:</label> 
+                            <input type="text" class="input-line" style="flex-grow: 1;">
+                            <span style="margin: 0 5px;">:</span>
+                        </div>
+                    </div>
+                    <div class="info-col" style="direction: ltr;">
+                        <div class="info-row" style="direction: rtl;">
+                            <label>اسم المجموعة:</label> <span style="margin: 0 5px;">(</span> 
+                            <input type="text" class="input-line" style="flex-grow: 1;">
+                            <span>)</span>
+                        </div>
+                        <div class="info-row" style="direction: rtl;">
+                            <label>المستوى:</label> <span style="margin: 0 5px;">:</span> 
+                            <input type="text" class="input-line" style="flex-grow: 1;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & Time Box -->
+                <div class="date-box">
+                    <div class="info-row">
+                        <label>اليوم /</label> <input type="text" class="input-line" style="flex-grow: 1;">
+                        <label style="margin: 0 10px;">التاريخ:</label> 
+                        <span>/</span> <input type="text" class="input-inline" style="width: 30px; border-bottom: 1px dotted #3e2723;"> <span>/</span> <span>14 هـ</span>
+                        <span style="margin: 0 10px;">الموافق</span>
+                        <span>/</span> <input type="text" class="input-inline" style="width: 30px; border-bottom: 1px dotted #3e2723;"> <span>/</span> <span>20 م</span>
+                    </div>
+                    <div class="info-row" style="margin-top: 8px;">
+                        <label>الفترة /</label> <input type="text" class="input-line" style="width: 15%;">
+                        <label style="margin: 0 10px;">من الساعة</label> <input type="text" class="input-line" style="flex-grow: 1;">
+                        <label style="margin: 0 10px;">إلى الساعة</label> <input type="text" class="input-line" style="flex-grow: 1;">
+                    </div>
+                </div>
+
+                <!-- Curriculum Table -->
+                <div class="main-title">منهج حصة اليوم</div>
+                <table class="curriculum-table">
+                    <thead>
+                        <tr>
+                            <th class="col-time">الزمن<br>بالدقيقة</th>
+                            <th class="col-curriculum">المنهج</th>
+                            <th class="col-topic">الموضوع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1 -->
+                        <tr>
+                            <td class="col-time">٥</td>
+                            <td class="col-curriculum" colspan="2" style="text-align: right; padding-right: 10px;">
+                                <div style="display: flex; align-items: center;">
+                                    <span>كتابة السبورة - أخذ الغياب</span>
+                                    <span style="margin: 0 15px;">العدد ( حاضر</span>
+                                    <input type="text" class="input-inline" style="width: 50px; border-bottom: 1px dotted #3e2723;">
+                                    <span style="margin: 0 5px;">/ غائب</span>
+                                    <input type="text" class="input-inline" style="width: 50px; border-bottom: 1px dotted #3e2723;">
+                                    <span>)</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr>
+                            <td class="col-time">١٥</td>
+                            <td class="col-curriculum">الأحكام</td>
+                            <td class="col-topic">
+                                <div style="font-weight: bold; margin-bottom: 5px;">عناصر الدرس :</div>
+                                <input type="text" class="input-line" style="margin-bottom: 5px;">
+                                <input type="text" class="input-line">
+                            </td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr>
+                            <td class="col-time">٥٠</td>
+                            <td class="col-curriculum">
+                                <div>المراجعة</div>
+                                <div style="border-top: 1px solid #3e2723; margin: 4px 0;"></div>
+                                <div>تسميع</div>
+                            </td>
+                            <td class="col-topic">
+                                <input type="text" class="input-line" style="margin-bottom: 5px;">
+                                <input type="text" class="input-line">
+                            </td>
+                        </tr>
+                        <!-- Row 4 (Hifz) -->
+                        <tr class="bg-highlight">
+                            <td class="col-time">٥٠</td>
+                            <td class="col-curriculum">الحفظ</td>
+                            <td class="col-topic">
+                                <div class="info-row">
+                                    <label>سورة</label> <input type="text" class="input-line" style="flex-grow: 1;">
+                                    <label style="margin-right:10px">صفحة رقم</label> <span style="margin:0 5px">(</span> 
+                                    <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
+                                    <span style="margin:0 5px">)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span style="margin:0 5px">(</span> <label>إلى</label> 
+                                    <input type="text" class="input-inline" style="width: 60px; border-bottom: 1px dotted #3e2723;"> 
+                                    <span style="margin:0 5px">)</span>
+                                    <span style="margin:0 5px">(</span> <label>الآيات من</label> 
+                                    <input type="text" class="input-inline" style="width: 60px; border-bottom: 1px dotted #3e2723;"> 
+                                    <span style="margin:0 5px">)</span>
+                                </div>
+                                
+                                <div style="margin-top: 10px;">
+                                    <label style="font-weight: bold; display: block; margin-bottom: 2px;">بعض معاني الكلمات :</label>
+                                    <input type="text" class="input-line" style="margin-bottom: 5px;">
+                                    <input type="text" class="input-line">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Next Lesson -->
+                <div class="next-lesson-container">
+                    <div class="next-lesson-header">منهج الحصة القادمة إن شاء الله</div>
+                    
+                    <div class="next-lesson-row">
+                        <div class="nl-label">الحفظ</div>
+                        <div class="nl-content">
+                            <div class="info-row">
+                                <label>سورة</label> <input type="text" class="input-line" style="flex-grow: 1;">
+                                <span style="margin:0 5px">(</span> <label>الآيات من</label> 
+                                <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
+                                <span style="margin:0 5px">)</span>
+                                <span style="margin:0 5px">(</span> <label>إلى</label> 
+                                <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
+                                <span style="margin:0 5px">)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="next-lesson-row">
+                        <div class="nl-label">المراجعة</div>
+                        <div class="nl-content">
+                            <input type="text" class="input-line" style="margin-top: 2px;">
+                        </div>
+                    </div>
+
+                    <div class="next-lesson-row">
+                        <div class="nl-label">الأحكام</div>
+                        <div class="nl-content">
+                            <input type="text" class="input-line" style="margin-top: 2px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supervisor Box -->
+                <div class="supervisor-box">
+                    <div class="supervisor-title">توصيات المشرف الفني</div>
+                    <input type="text" class="input-line" style="margin-top: 10px; margin-bottom: 10px;">
+                    <input type="text" class="input-line">
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <label style="font-weight: bold; margin-left: 10px;">توقيع المشرف الفني</label>
+                        <span>(</span> <input type="text" class="input-inline" style="width: 150px; border-bottom: 1px dotted #3e2723;"> <span>)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Functions ---
+
+        function addNewPage() {
+            const container = document.getElementById('pages-container');
+            const template = document.getElementById('page-template');
+            
+            // استنساخ الصفحة
+            const newPage = template.cloneNode(true);
+            
+            // مسح المدخلات في الصفحة الجديدة
+            const inputs = newPage.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+            
+            // إظهار زر الحذف
+            newPage.querySelector('.delete-page-btn').style.display = 'flex';
+            
+            // تعيين معرف جديد لضمان عدم التكرار (اختياري، ليس ضرورياً للوظائف البسيطة)
+            newPage.id = 'page-' + Date.now();
+            
+            container.appendChild(newPage);
+            updateDeleteButtons();
+            
+            // التمرير للأسفل
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function deletePage(btn) {
+            if(confirm('هل أنت متأكد من حذف هذه الصفحة؟')) {
+                btn.closest('.page-wrapper').remove();
+                updateDeleteButtons();
+            }
+        }
+
+        function updateDeleteButtons() {
+            const pages = document.querySelectorAll('.page-wrapper');
+            // إذا كانت صفحة واحدة فقط، نخفي زر الحذف
+            if (pages.length === 1) {
+                pages[0].querySelector('.delete-page-btn').style.display = 'none';
+            } else {
+                pages.forEach(page => {
+                    page.querySelector('.delete-page-btn').style.display = 'flex';
+                });
+            }
+        }
+
+        function clearAll() {
+            if(confirm('هل تريد مسح جميع البيانات؟')) {
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => input.value = '');
+            }
+        }
+
+        function saveToLocal() {
+            const pagesData = [];
+            const pages = document.querySelectorAll('.page-wrapper');
+            
+            pages.forEach(page => {
+                const inputs = page.querySelectorAll('input');
+                const pageValues = [];
+                inputs.forEach(input => pageValues.push(input.value));
+                pagesData.push(pageValues);
+            });
+            
+            localStorage.setItem('quranLessonPlanData', JSON.stringify(pagesData));
+            alert('تم الحفظ بنجاح! يمكنك استرجاع البيانات لاحقاً.');
+        }
+
+        function loadFromLocal() {
+            const data = localStorage.getItem('quranLessonPlanData');
+            if (!data) {
+                alert('لا توجد بيانات محفوظة مسبقاً.');
+                return;
+            }
+            
+            if(confirm('سيتم استبدال الصفحة الحالية بالبيانات المحفوظة. هل أنت موافق؟')) {
+                const pagesData = JSON.parse(data);
+                const container = document.getElementById('pages-container');
+                const template = document.getElementById('page-template'); // القالب الأصلي
+                
+                // مسح كل الصفحات الحالية ما عدا الأولى (لأننا سنعيد البناء)
+                // الأفضل: تفريغ الحاوية ثم إعادة الإنشاء
+                container.innerHTML = '';
+                
+                pagesData.forEach((pageValues, index) => {
+                    const newPage = template.cloneNode(true);
+                    newPage.id = 'page-loaded-' + index;
+                    
+                    const inputs = newPage.querySelectorAll('input');
+                    pageValues.forEach((val, i) => {
+                        if(inputs[i]) inputs[i].value = val;
+                    });
+                    
+                    container.appendChild(newPage);
+                });
+                
+                updateDeleteButtons();
+            }
+        }
+
+        function exportPDF() {
+            // استخدام نافذة الطباعة الافتراضية لأنها الأفضل في التعامل مع CSS Vector
+            window.print();
+        }
+
+        function exportPNG() {
+            // نخفي أزرار الحذف مؤقتاً
+            const deleteBtns = document.querySelectorAll('.delete-page-btn');
+            deleteBtns.forEach(b => b.style.display = 'none');
+
+            // نأخذ الصفحة الأولى فقط كمثال، أو الصفحة النشطة
+            const element = document.querySelector('.page'); // يأخذ أول صفحة
+            
+            html2canvas(element, {
+                scale: 2, // دقة عالية
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null // شفاف ليأخذ لون الصفحة
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'lesson-plan.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                // إعادة إظهار الأزرار
+                updateDeleteButtons();
+            });
+        }
+    </script>
+</body>
+</html>
