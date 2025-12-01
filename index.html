@@ -2,518 +2,438 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>دفتر التحضير الرقمي - مدرسة القرآن</title>
-    <!-- مكتبة لتصدير الصور -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <!-- مكتبة الأيقونات الاحترافية (Phosphor Icons) -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Reem+Kufi:wght@500;600;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary-brown: #4b2e2a;
+            --primary-color: #4b2e2a;
             --border-color: #6d4c41;
-            --page-bg: #f3e5ab;
+            --paper-bg: radial-gradient(circle, #fdfbf7 0%, #f3e5ab 80%, #e6d2b5 100%);
             --header-bg: #e6d2b5;
-            --highlight-bg: #e8dcc5; 
-            --box-bg: #faf0e6;
-            --pen-color: #1a237e; /* لون أزرق حبري للكتابة */
-            --placeholder-color: #8d6e63;
+            --highlight-bg: #e8dcc5;
+            --ui-bg: #2b1d1a;
+            --toolbar-bg: #3e2723;
+            --btn-bg: #d7ccc8;
+            --btn-text: #3e2723;
+            --pen-color: #1a237e;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
+        /* Themes */
+        body.theme-green { --primary-color: #1b5e20; --border-color: #2e7d32; --paper-bg: #f1f8e9; --header-bg: #c8e6c9; --highlight-bg: #dcedc8; --ui-bg: #003300; --toolbar-bg: #1b5e20; --btn-bg: #a5d6a7; --btn-text: #1b5e20; }
+        body.theme-blue { --primary-color: #0d47a1; --border-color: #1565c0; --paper-bg: #e3f2fd; --header-bg: #bbdefb; --highlight-bg: #e3f2fd; --ui-bg: #00102b; --toolbar-bg: #0d47a1; --btn-bg: #90caf9; --btn-text: #0d47a1; }
+        
+        /* Hide UI in Presentation/Print */
+        body.presentation-mode .settings-toggle, body.presentation-mode .settings-panel, body.presentation-mode .stamps-sidebar, body.presentation-mode .history-sidebar, body.presentation-mode .todo-sidebar, body.presentation-mode .delete-page-btn, body.presentation-mode .timer-overlay, body.presentation-mode .counter-overlay { display: none !important; }
+        body.presentation-mode { background-color: #000; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
         body {
-            font-family: 'Amiri', serif;
-            background-color: #2b1d1a;
-            margin: 0;
-            padding: 20px;
-            padding-top: 80px; /* مساحة لشريط الأدوات */
-            color: #3e2723;
-            font-size: 16px;
+            font-family: 'Amiri', serif; background-color: var(--ui-bg);
+            margin: 0; padding: 0; min-height: 100vh;
+            color: var(--primary-color); font-size: 16px;
+            overflow-x: hidden; transition: background-color 0.3s ease;
+            background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* --- Toolbar Styles (Non-printable) --- */
-        .toolbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: #3e2723;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            z-index: 1000;
-            border-bottom: 3px solid #6d4c41;
+        /* --- Settings Menu (Replaces Top Toolbar) --- */
+        .settings-toggle {
+            position: fixed; top: 20px; left: 20px; width: 50px; height: 50px;
+            background: var(--toolbar-bg); color: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; z-index: 2000;
+            border: 2px solid var(--btn-bg); transition: transform 0.3s;
         }
+        .settings-toggle:hover { transform: rotate(90deg); }
 
-        .btn {
-            background: #d7ccc8;
-            color: #3e2723;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px; /* حواف أزرار أنعم */
-            cursor: pointer;
-            font-family: 'Reem Kufi', sans-serif;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px; /* مسافة أفضل بين الأيقونة والنص */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        .settings-panel {
+            position: fixed; top: 0; left: -320px; width: 300px; height: 100vh;
+            background: var(--paper-bg); border-right: 5px solid var(--primary-color);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.5); z-index: 1999;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; overflow-y: auto;
         }
-
-        .btn i {
-            font-size: 18px; /* حجم الأيقونات */
-        }
-
-        .btn:hover {
-            background: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-danger { background: #ffccbc; color: #b71c1c; }
-        .btn-success { background: #c8e6c9; color: #1b5e20; }
-        .btn-primary { background: #bbdefb; color: #0d47a1; }
-
-        /* --- Page Container --- */
-        #pages-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .page-wrapper {
-            position: relative;
-        }
-
-        .delete-page-btn {
-            position: absolute;
-            top: 15px;
-            left: -50px;
-            background: #b71c1c;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
+        .settings-panel.active { left: 0; }
+        
+        .settings-header {
+            background: var(--primary-color); color: #fff; padding: 20px;
+            font-family: 'Reem Kufi'; font-size: 22px; text-align: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
         
-        .delete-page-btn:hover {
-            transform: scale(1.1);
-            background: #d32f2f;
+        .settings-content { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .settings-section { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 10px; border: 1px solid var(--primary-color); }
+        .settings-title { font-weight: bold; margin-bottom: 10px; font-size: 14px; opacity: 0.8; border-bottom: 1px dashed var(--primary-color); }
+        
+        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .btn-tool {
+            background: var(--btn-bg); color: var(--btn-text); border: none; padding: 10px;
+            border-radius: 8px; cursor: pointer; font-family: 'Reem Kufi'; font-size: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .btn-tool:hover { transform: translateY(-2px); background: #fff; }
+        .btn-tool i { font-size: 24px; }
 
+        /* --- Page Container (Responsive) --- */
+        #viewport-container {
+            width: 100%; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start;
+            padding: 20px; overflow: visible;
+        }
+        #pages-container { 
+            transform-origin: top center; transition: transform 0.2s; 
+            /* Will be scaled by JS */
+        }
+        
         .page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 10mm 15mm;
-            background-color: var(--page-bg);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-            border: 1px solid #c0a080;
-            position: relative;
-            filter: sepia(0.25); 
-            margin: 0 auto;
-            border-radius: 20px; /* حواف الصفحة مقوسة */
-            overflow: hidden; /* لضمان قص الخلفية عند الحواف */
+            width: 210mm; min-height: 297mm; padding: 10mm 15mm;
+            background: var(--paper-bg);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+            position: relative; margin: 0 auto 30px auto; 
+            border-radius: 20px; overflow: hidden;
+        }
+        .page::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.6; pointer-events: none;
         }
 
-        /* --- Input Styling (Invisible but writable) --- */
-        input[type="text"], textarea {
-            background: transparent;
-            border: none;
-            font-family: 'Amiri', serif;
-            font-size: 16px;
-            color: var(--pen-color); /* لون الكتابة */
-            width: 100%;
-            outline: none;
-            padding: 0 5px;
+        /* --- Sidebars (History, etc) --- */
+        .sidebar-panel { 
+            position: fixed; top: 0; height: 100vh; background: #fff; 
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3); transition: left 0.3s; z-index: 2100; 
+            border-right: 2px solid var(--primary-color); display: flex; flex-direction: column; 
         }
+        .history-sidebar, .todo-sidebar { left: -320px; width: 300px; }
+        .sidebar-panel.active { left: 0; }
+        .sidebar-header { background: var(--primary-color); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-content { padding: 15px; overflow-y: auto; flex: 1; }
 
-        /* تخصيص المدخلات لتشبه الخطوط */
-        .input-line {
-            border-bottom: 1px dotted #3e2723;
-            height: 24px;
+        /* --- Stamps Sidebar --- */
+        .stamps-sidebar {
+            position: fixed; right: -120px; top: 100px; width: 110px; background: var(--btn-bg);
+            padding: 10px; border-radius: 10px 0 0 10px; box-shadow: -2px 5px 15px rgba(0,0,0,0.3);
+            transition: right 0.3s; z-index: 1000; border: 2px solid var(--primary-color); 
+            display: flex; flex-direction: column; gap: 10px; align-items: center;
         }
+        .stamps-sidebar.active { right: 0; }
+        .stamps-toggle { position: absolute; left: -30px; top: 10px; width: 30px; height: 40px; background: var(--primary-color); color: white; border-radius: 5px 0 0 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        .stamp-tool { width: 70px; height: 70px; font-size: 14px; } /* Smaller in sidebar */
+
+        /* --- Overlays --- */
+        .float-overlay { position: fixed; bottom: 20px; background: var(--toolbar-bg); color: #fff; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); display: none; align-items: center; gap: 10px; z-index: 2000; border: 2px solid var(--btn-bg); }
+        .timer-overlay { right: 20px; }
+        .counter-overlay { left: 20px; flex-direction: column; width: 120px; }
+        .sticky-note { position: absolute; width: 150px; min-height: 120px; background: #fff9c4; border-bottom-right-radius: 20px 5px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); padding: 10px; z-index: 100; cursor: move; transform: rotate(-2deg); border-top: 5px solid rgba(255,255,0,0.3); }
         
-        .input-line:focus {
-            background-color: rgba(255,255,255,0.2);
-            border-bottom: 1px solid var(--pen-color);
-        }
+        /* --- Content Styling --- */
+        .school-logo-text { width: 90px; height: 90px; border-radius: 50%; border: 3px double var(--primary-color); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Aref Ruqaa'; color: var(--primary-color); background: rgba(255,255,255,0.25); transform: rotate(-5deg); transition: transform 0.3s; }
+        .school-logo-text:hover { transform: rotate(0deg) scale(1.05); }
+        .rating-stars { display: inline-flex; gap: 2px; direction: ltr; margin-right: 10px; vertical-align: middle; }
+        .star { color: #ccc; cursor: pointer; font-size: 20px; } .star.active { color: #ffd700; }
+        
+        /* Tables */
+        .info-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 20px; }
+        .info-table td { padding: 2px 5px; vertical-align: bottom; }
+        .info-table label { font-weight: 700; font-size: 16px; white-space: nowrap; margin-left: 8px; color: var(--primary-color); }
 
-        /* مساحات صغيرة */
-        .input-inline {
-            display: inline-block;
-            text-align: center;
-        }
-
-        /* --- Existing Design Styles (Preserved) --- */
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            border-bottom: 2px solid var(--primary-brown);
-            padding-bottom: 10px;
-        }
-
-        .header-right { text-align: center; width: 25%; }
-        .header-center { text-align: center; flex-grow: 1; }
-        .header-left { width: 25%; text-align: center; display: flex; justify-content: center; align-items: center; }
-
-        .school-logo-text {
-            width: 80px; height: 80px; border-radius: 50%;
-            border: 3px double var(--primary-brown);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; font-family: 'Aref Ruqaa', serif;
-            color: var(--primary-brown); background: rgba(255,255,255,0.25);
-            padding: 2px; line-height: 1.1; transform: rotate(-5deg);
-        }
-
-        .logo-line-1 { font-size: 12px; }
-        .logo-line-2 { font-size: 16px; font-weight: 700; }
-        .logo-line-3 { font-size: 10px; margin-top: 2px; }
-
-        .basmala { font-family: 'Reem Kufi', sans-serif; font-size: 26px; font-weight: 700; color: var(--primary-brown); }
-        .school-name { font-family: 'Reem Kufi', sans-serif; font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--primary-brown); }
-
-        .info-section { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; }
-        .info-col { width: 48%; }
-        .info-row { display: flex; align-items: center; margin-bottom: 5px; }
-        .info-row label { font-weight: 700; white-space: nowrap; margin-left: 5px; }
-
-        .date-box {
-            border: 2px solid var(--primary-brown); border-radius: 15px;
-            padding: 8px 15px; margin-bottom: 15px; background-color: rgba(255,255,255,0.2);
-        }
-
-        .main-title {
-            text-align: center; background-color: rgba(62, 39, 35, 0.1);
-            border: 2px solid var(--primary-brown); border-radius: 12px;
-            padding: 5px; font-family: 'Reem Kufi', sans-serif; font-size: 18px;
-            font-weight: 700; width: 100%; margin-bottom: 5px; color: var(--primary-brown);
-        }
-
-        table.curriculum-table {
-            width: 100%; border-collapse: separate; border-spacing: 0;
-            border: 2px solid var(--primary-brown); border-radius: 15px;
-            overflow: hidden; margin-bottom: 15px;
-        }
-
-        .curriculum-table th, .curriculum-table td {
-            padding: 5px; vertical-align: middle;
-            border-left: 1px solid var(--primary-brown); border-bottom: 1px solid var(--primary-brown);
-        }
-
-        .curriculum-table th {
-            background-color: var(--header-bg); font-weight: 700; text-align: center;
-            font-family: 'Reem Kufi', sans-serif; color: var(--primary-brown);
-            border-bottom: 2px solid var(--primary-brown);
-        }
-
+        table.curriculum-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 2px solid var(--primary-color); border-radius: 15px; overflow: hidden; margin-bottom: 15px; background: rgba(255,255,255,0.3); }
+        .curriculum-table th, .curriculum-table td { padding: 5px; vertical-align: middle; border-left: 1px solid var(--primary-color); border-bottom: 1px solid var(--primary-color); }
+        .curriculum-table th { background-color: var(--header-bg); border-bottom: 2px solid var(--primary-color); }
         .curriculum-table th:last-child, .curriculum-table td:last-child { border-left: none; }
         .curriculum-table tr:last-child td { border-bottom: none; }
-
-        .col-time { width: 8%; text-align: center; font-weight: bold; }
-        .col-curriculum { width: 18%; text-align: center; font-weight: bold; font-size: 14px; }
-        .col-topic { width: 74%; }
-
-        .bg-highlight { background-color: var(--highlight-bg); }
-
-        .next-lesson-container {
-            border: 2px solid var(--primary-brown); border-radius: 15px;
-            margin-bottom: 15px; overflow: hidden;
-        }
-
-        .next-lesson-header {
-            text-align: center; font-family: 'Reem Kufi', sans-serif; font-weight: 700;
-            background-color: rgba(255,255,255,0.3); padding: 5px;
-            border-bottom: 1px solid var(--primary-brown); color: var(--primary-brown);
-        }
-
-        .next-lesson-row { display: flex; border-bottom: 1px solid var(--primary-brown); }
-        .next-lesson-row:last-child { border-bottom: none; }
-
-        .nl-label {
-            width: 15%; background-color: rgba(62, 39, 35, 0.05);
-            display: flex; align-items: center; justify-content: center; font-weight: 700;
-            border-left: 1px solid var(--primary-brown); padding: 5px; font-size: 15px;
-            color: var(--primary-brown);
-        }
+        .col-time { width: 8%; text-align: center; font-weight: bold; } 
+        
+        /* Elements */
+        input, textarea, input[type="number"] { background: transparent; border: none; font-family: 'Amiri', serif; font-size: 16px; color: var(--pen-color); width: 100%; outline: none; padding: 0 5px; }
+        .input-line { border-bottom: 1px dotted var(--primary-color); height: 24px; display: inline-block; width: 100%; }
+        .input-inline { display: inline-block; text-align: center; border-bottom: 1px dotted var(--primary-color); }
+        .editable-label { cursor: pointer; border-bottom: 1px dashed transparent; }
+        .editable-label:hover { border-bottom-color: var(--primary-color); }
+        
+        /* Common containers */
+        .date-box { border: 2px solid var(--primary-color); border-radius: 15px; padding: 5px; margin-bottom: 15px; display: table; width: 100%; background: rgba(255,255,255,0.3); border-spacing: 2px; }
+        .date-row { display: table-row; } .date-cell { display: table-cell; padding: 5px; white-space: nowrap; vertical-align: middle; }
+        .next-lesson-container { border: 2px solid var(--primary-color); border-radius: 15px; margin-bottom: 15px; overflow: hidden; }
+        .next-lesson-header { text-align: center; font-family: 'Reem Kufi'; font-weight: 700; background-color: var(--header-bg); padding: 5px; border-bottom: 1px solid var(--primary-color); }
+        .next-lesson-row { display: flex; border-bottom: 1px solid var(--primary-color); } .next-lesson-row:last-child { border-bottom: none; }
+        .nl-label { width: 15%; background-color: rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; font-weight: 700; border-left: 1px solid var(--primary-color); padding: 5px; }
         .nl-content { width: 85%; padding: 5px 10px; }
+        .supervisor-box { border: 2px solid var(--primary-color); border-radius: 15px; padding: 15px; position: relative; min-height: 100px; margin-top: 10px; }
+        .supervisor-title { position: absolute; top: -12px; right: 20px; background: var(--paper-bg); padding: 0 10px; font-family: 'Reem Kufi'; font-weight: 700; border: 1px solid var(--primary-color); border-radius: 5px; }
+        .drawing-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 200; pointer-events: none; }
+        .drawing-canvas.active { pointer-events: auto; cursor: crosshair; }
+        .stamp-instance { position: absolute; z-index: 50; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; border: 3px double currentColor; border-radius: 50%; font-family: 'Aref Ruqaa'; font-weight: bold; font-size: 18px; mix-blend-mode: multiply; background: rgba(255,255,255,0.1); cursor: move; }
+        .delete-stamp-btn { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background: red; color: white; border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        .stamp-instance:hover .delete-stamp-btn { display: flex; }
 
-        .supervisor-box {
-            border: 2px solid var(--primary-brown); border-radius: 15px;
-            padding: 15px; position: relative; min-height: 100px; margin-top: 10px;
+        /* Updated Header Styles */
+        .header-container { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 20px; border-bottom: 3px double var(--primary-color); 
+            padding-bottom: 15px; 
         }
-        .supervisor-title {
-            position: absolute; top: -14px; right: 25px; background: var(--page-bg);
-            padding: 0 10px; font-family: 'Reem Kufi', sans-serif; font-weight: 700;
-            color: var(--primary-brown); font-size: 16px;
+        .header-right { text-align: center; width: 30%; } 
+        .header-center { text-align: center; flex-grow: 1; } 
+        .header-left { width: 30%; text-align: center; display: flex; justify-content: center; align-items: center; }
+        
+        .school-name { 
+            font-family: 'Reem Kufi', sans-serif; font-size: 18px; font-weight: 700; 
+            line-height: 1.5; color: var(--primary-color); 
+        }
+        .basmala { 
+            font-family: 'Reem Kufi', sans-serif; font-size: 28px; font-weight: 700; 
+            color: var(--primary-color); letter-spacing: 1px;
         }
 
-        /* --- Print Styles --- */
+        /* General styles */
+        .rule-card { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; padding: 10px; }
+        .rule-title { font-weight: bold; color: var(--primary-color); margin-bottom: 5px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        .history-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; } .history-item:hover { background: #f5f5f5; }
+        .todo-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; gap: 10px; }
+
         @media print {
-            @page { size: A4; margin: 0; }
-            body { background-color: #fff; padding: 0; margin: 0; }
-            .toolbar, .delete-page-btn { display: none !important; }
-            .page { 
-                background-color: var(--page-bg) !important;
-                filter: sepia(0.25) !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                border: none; box-shadow: none; margin: 0 auto;
-                page-break-after: always;
-                width: 210mm; height: 297mm;
-                border-radius: 0; /* إلغاء التقوس عند الطباعة لملء الصفحة بالكامل */
-            }
-            .page-wrapper { margin-bottom: 0; }
-            /* إخفاء حدود المدخلات عند الطباعة لتبدو كجزء من التصميم */
-            input, textarea { border-bottom: none !important; }
-            /* إعادة رسم الخطوط المنقطة كخلفية عند الطباعة إذا اختفت، أو الاعتماد على أن الـ input شفاف */
-            .input-line { border-bottom: 1px dotted #3e2723 !important; }
+            body { background: #fff; padding: 0; margin: 0; overflow: visible; }
+            .settings-toggle, .settings-panel, .stamps-sidebar, .float-overlay, .sticky-note, .delete-page-btn, .clear-sig-btn, .delete-stamp-btn, .preview-btn, .drawing-canvas { display: none !important; }
+            .page { background: var(--paper-bg) !important; box-shadow: none; border: none; width: 100%; height: auto; margin: 0; page-break-after: always; border-radius: 0; transform: none !important; }
+            #pages-container { transform: none !important; margin: 0; width: 100%; }
+            #viewport-container { padding: 0; display: block; }
         }
     </style>
 </head>
 <body>
+    <input type="file" id="restore-input" style="display: none;" accept=".json" onchange="importBackup(this)">
 
-    <!-- Toolbar with Professional Icons -->
-    <div class="toolbar">
-        <button class="btn btn-primary" onclick="addNewPage()">
-            <i class="ph ph-plus-circle"></i> صفحة جديدة
-        </button>
-        <button class="btn btn-danger" onclick="clearAll()">
-            <i class="ph ph-eraser"></i> مسح الكل
-        </button>
-        <div style="width: 1px; height: 30px; background: #8d6e63; opacity: 0.5;"></div>
-        <button class="btn" onclick="saveToLocal()">
-            <i class="ph ph-floppy-disk"></i> حفظ مؤقت
-        </button>
-        <button class="btn" onclick="loadFromLocal()">
-            <i class="ph ph-folder-open"></i> استرجاع
-        </button>
-        <div style="width: 1px; height: 30px; background: #8d6e63; opacity: 0.5;"></div>
-        <button class="btn btn-success" onclick="exportPDF()">
-            <i class="ph ph-printer"></i> طباعة / PDF
-        </button>
-        <button class="btn" onclick="exportPNG()">
-            <i class="ph ph-image"></i> حفظ كصورة
-        </button>
+    <!-- Settings Toggle -->
+    <div class="settings-toggle" onclick="toggleSidebar('settings-panel')">
+        <i class="ph ph-gear" style="font-size: 28px;"></i>
     </div>
 
-    <div id="pages-container">
-        <!-- سيتم استنساخ هذا القالب -->
-        <div class="page-wrapper" id="page-template">
-            <!-- زر حذف الصفحة مع أيقونة -->
-            <button class="delete-page-btn" onclick="deletePage(this)" style="display: none;" title="حذف الصفحة">
-                <i class="ph ph-trash" style="font-size: 18px;"></i>
-            </button>
+    <!-- Settings Menu Sidebar -->
+    <div id="settings-panel" class="settings-panel">
+        <div class="settings-header">
+            <span>الإعدادات والأدوات</span>
+            <button onclick="toggleSidebar('settings-panel')" style="background:none;border:none;color:white;cursor:pointer;">✕</button>
+        </div>
+        <div class="settings-content">
             
-            <div class="page">
-                <!-- Header -->
+            <div class="settings-section">
+                <div class="settings-title">إدارة الملفات</div>
+                <div class="tools-grid">
+                    <button class="btn-tool" onclick="addNewPage()"><i class="ph ph-plus-circle" style="color:var(--primary-color)"></i>جديد</button>
+                    <button class="btn-tool" onclick="saveToLocal()"><i class="ph ph-floppy-disk" style="color:var(--primary-color)"></i>حفظ</button>
+                    <button class="btn-tool" onclick="toggleSidebar('history-sidebar')"><i class="ph ph-clock-counter-clockwise" style="color:var(--primary-color)"></i>أرشيف</button>
+                    <button class="btn-tool" onclick="exportBackup()"><i class="ph ph-download-simple" style="color:#1565c0"></i>تصدير</button>
+                    <button class="btn-tool" onclick="triggerImport()"><i class="ph ph-upload-simple" style="color:#2e7d32"></i>استعادة</button>
+                    <button class="btn-tool" onclick="clearAll()"><i class="ph ph-eraser" style="color:#c62828"></i>مسح</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">أدوات المعلم</div>
+                <div class="tools-grid">
+                    <button class="btn-tool" onclick="toggleDrawingMode()"><i class="ph ph-pencil-simple" style="color:#f57f17"></i>رسم</button>
+                    <!-- تم حذف زر التجويد من هنا -->
+                    <button class="btn-tool" onclick="toggleCounter()"><i class="ph ph-plus-minus" style="color:#2e7d32"></i>عداد</button>
+                    <button class="btn-tool" onclick="addStickyNote()"><i class="ph ph-note" style="color:#f9a825"></i>ملاحظة</button>
+                    <button class="btn-tool" onclick="toggleSidebar('todo-sidebar')"><i class="ph ph-check-square" style="color:#6d4c41"></i>مهام</button>
+                    <button class="btn-tool" onclick="toggleSpeech()"><i class="ph ph-microphone" style="color:#d84315"></i>صوت</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">المجموعات</div>
+                <select id="group-preset-select" class="group-select" style="width:100%;margin-bottom:5px;" onchange="applyGroupPreset(this)"><option value="">-- اختر مجموعة --</option></select>
+                <button class="btn-tool" style="width:100%" onclick="saveGroupPreset()"><i class="ph ph-users"></i> حفظ المجموعة الحالية</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">المظهر والعرض</div>
+                <div class="tools-grid">
+                    <button class="btn-tool" onclick="setTheme('default')" style="background:#d7ccc8">بني</button>
+                    <button class="btn-tool" onclick="setTheme('green')" style="background:#c8e6c9">أخضر</button>
+                    <button class="btn-tool" onclick="setTheme('blue')" style="background:#bbdefb">أزرق</button>
+                </div>
+                <div class="tools-grid" style="margin-top:10px;">
+                    <button class="btn-tool" onclick="togglePresentationMode()"><i class="ph ph-monitor-play"></i>عرض</button>
+                    <button class="btn-tool" onclick="generateWhatsAppReport()"><i class="ph ph-whatsapp-logo" style="color:#25d366"></i>واتس</button>
+                    <button class="btn-tool" onclick="exportPDF()"><i class="ph ph-printer"></i>PDF</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Other Sidebars (Hidden by default) -->
+    <div id="history-sidebar" class="sidebar-panel history-sidebar">
+        <div class="sidebar-header"><span>📅 الأرشيف</span><button onclick="toggleSidebar('history-sidebar')" style="background:none;border:none;color:white;">✕</button></div>
+        <div id="history-list" class="sidebar-content"></div>
+    </div>
+
+    <div id="todo-sidebar" class="sidebar-panel todo-sidebar">
+        <div class="sidebar-header"><span>✅ المهام</span><button onclick="toggleSidebar('todo-sidebar')" style="background:none;border:none;color:white;">✕</button></div>
+        <div class="sidebar-content">
+            <div class="todo-input-group">
+                <input type="text" id="new-todo" class="todo-input" placeholder="مهمة جديدة..." style="width:70%;border:1px solid #ccc;border-radius:5px;padding:5px;">
+                <button onclick="addTodo()" style="background:var(--primary-color);color:white;border:none;border-radius:5px;">+</button>
+            </div>
+            <ul id="todo-list" style="list-style:none;padding:0;"></ul>
+        </div>
+    </div>
+
+    <!-- تم حذف التجويد Sidebar من هنا -->
+
+    <!-- Stamps -->
+    <div class="stamps-sidebar" id="stamps-sidebar">
+        <button class="stamps-toggle" onclick="toggleStamps()"><i class="ph ph-stamp" style="font-size:24px;"></i></button>
+        <div class="stamp-tool stamp-excellent" draggable="true" ondragstart="dragStamp(event, 'ممتاز', 'stamp-excellent')">ممتاز</div>
+        <div class="stamp-tool stamp-verygood" draggable="true" ondragstart="dragStamp(event, 'جيد جداً', 'stamp-verygood')">جيد</div>
+        <div class="stamp-tool stamp-redo" draggable="true" ondragstart="dragStamp(event, 'يُعاد', 'stamp-redo')">يُعاد</div>
+    </div>
+
+    <!-- Overlays -->
+    <div id="timer-overlay" class="float-overlay timer-overlay">
+        <div><div style="font-size:12px;opacity:0.8;">الوقت</div><div id="timer-display" class="counter-display">00:00</div></div>
+        <div style="display:flex;gap:5px;"><button class="control-btn" onclick="pauseTimer()"><i class="ph ph-pause"></i></button><button class="control-btn" onclick="stopTimer()"><i class="ph ph-x"></i></button></div>
+    </div>
+    <div id="counter-overlay" class="float-overlay counter-overlay">
+        <div id="counter-display" class="counter-display">0</div>
+        <div style="display:flex;gap:5px;"><button onclick="updateCounter(1)">+</button><button onclick="updateCounter(-1)">-</button></div>
+        <button onclick="updateCounter(0)" style="width:100%">تصفير</button>
+        <button class="control-btn" onclick="toggleCounter()" style="position:absolute;top:-10px;right:-10px;background:#333;width:20px;height:20px;font-size:10px;">✕</button>
+    </div>
+
+    <datalist id="surah-list"></datalist>
+
+    <!-- Main Viewport -->
+    <div id="viewport-container">
+        <div id="pages-container">
+        <div class="page-wrapper" id="page-template">
+            <button class="delete-page-btn" onclick="deletePage(this)" style="display:none;position:absolute;top:15px;left:-50px;background:#b71c1c;color:white;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;"><i class="ph ph-trash"></i></button>
+            <div class="page" ondrop="dropStamp(event)" ondragover="allowDrop(event)">
+                <canvas class="drawing-canvas"></canvas>
+
                 <div class="header-container">
-                    <div class="header-right">
-                        <div class="school-name">مدرسة القرآن<br>بمنشأة سلطان</div>
-                    </div>
-                    <div class="header-center">
-                        <div class="basmala">بسم الله الرحمن الرحيم</div>
-                    </div>
-                    <div class="header-left">
-                        <div class="school-logo-text">
-                            <div class="logo-line-1">مدرسة</div>
-                            <div class="logo-line-2">القرآن</div>
-                            <div class="logo-line-3">بمنشأة سلطان</div>
-                        </div>
-                    </div>
+                    <div class="header-right"><div class="school-name editable-label" ondblclick="makeEditable(this)">مدرسة القرآن<br>بمنشأة سلطان</div></div>
+                    <div class="header-center"><div class="basmala">بسم الله الرحمن الرحيم</div></div>
+                    <div class="header-left"><div class="school-logo-text"><div class="logo-line-1">مدرسة</div><div class="logo-line-2">القرآن</div><div class="logo-line-3">بمنشأة سلطان</div></div></div>
                 </div>
 
-                <!-- Info Fields -->
-                <div class="info-section">
-                    <div class="info-col">
-                        <div class="info-row">
-                            <label>رقم المجموعة:</label> 
-                            <input type="text" class="input-line" style="flex-grow: 1;">
-                            <span style="margin: 0 5px;">(</span> <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> <span>)</span>
-                        </div>
-                        <div class="info-row">
-                            <label>الفرقة:</label> 
-                            <input type="text" class="input-line" style="flex-grow: 1;">
-                            <span style="margin: 0 5px;">:</span>
-                        </div>
-                    </div>
-                    <div class="info-col" style="direction: ltr;">
-                        <div class="info-row" style="direction: rtl;">
-                            <label>اسم المجموعة:</label> <span style="margin: 0 5px;">(</span> 
-                            <input type="text" class="input-line" style="flex-grow: 1;">
-                            <span>)</span>
-                        </div>
-                        <div class="info-row" style="direction: rtl;">
-                            <label>المستوى:</label> <span style="margin: 0 5px;">:</span> 
-                            <input type="text" class="input-line" style="flex-grow: 1;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Date & Time Box -->
-                <div class="date-box">
-                    <div class="info-row">
-                        <label>اليوم /</label> <input type="text" class="input-line" style="flex-grow: 1;">
-                        <label style="margin: 0 10px;">التاريخ:</label> 
-                        <span>/</span> <input type="text" class="input-inline" style="width: 30px; border-bottom: 1px dotted #3e2723;"> <span>/</span> <span>14 هـ</span>
-                        <span style="margin: 0 10px;">الموافق</span>
-                        <span>/</span> <input type="text" class="input-inline" style="width: 30px; border-bottom: 1px dotted #3e2723;"> <span>/</span> <span>20 م</span>
-                    </div>
-                    <div class="info-row" style="margin-top: 8px;">
-                        <label>الفترة /</label> <input type="text" class="input-line" style="width: 15%;">
-                        <label style="margin: 0 10px;">من الساعة</label> <input type="text" class="input-line" style="flex-grow: 1;">
-                        <label style="margin: 0 10px;">إلى الساعة</label> <input type="text" class="input-line" style="flex-grow: 1;">
-                    </div>
-                </div>
-
-                <!-- Curriculum Table -->
-                <div class="main-title">منهج حصة اليوم</div>
-                <table class="curriculum-table">
-                    <thead>
-                        <tr>
-                            <th class="col-time">الزمن<br>بالدقيقة</th>
-                            <th class="col-curriculum">المنهج</th>
-                            <th class="col-topic">الموضوع</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Row 1 -->
-                        <tr>
-                            <td class="col-time">٥</td>
-                            <td class="col-curriculum" colspan="2" style="text-align: right; padding-right: 10px;">
-                                <div style="display: flex; align-items: center;">
-                                    <span>كتابة السبورة - أخذ الغياب</span>
-                                    <span style="margin: 0 15px;">العدد ( حاضر</span>
-                                    <input type="text" class="input-inline" style="width: 50px; border-bottom: 1px dotted #3e2723;">
-                                    <span style="margin: 0 5px;">/ غائب</span>
-                                    <input type="text" class="input-inline" style="width: 50px; border-bottom: 1px dotted #3e2723;">
-                                    <span>)</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Row 2 -->
-                        <tr>
-                            <td class="col-time">١٥</td>
-                            <td class="col-curriculum">الأحكام</td>
-                            <td class="col-topic">
-                                <div style="font-weight: bold; margin-bottom: 5px;">عناصر الدرس :</div>
-                                <input type="text" class="input-line" style="margin-bottom: 5px;">
-                                <input type="text" class="input-line">
-                            </td>
-                        </tr>
-                        <!-- Row 3 -->
-                        <tr>
-                            <td class="col-time">٥٠</td>
-                            <td class="col-curriculum">
-                                <div>المراجعة</div>
-                                <div style="border-top: 1px solid #3e2723; margin: 4px 0;"></div>
-                                <div>تسميع</div>
-                            </td>
-                            <td class="col-topic">
-                                <input type="text" class="input-line" style="margin-bottom: 5px;">
-                                <input type="text" class="input-line">
-                            </td>
-                        </tr>
-                        <!-- Row 4 (Hifz) -->
-                        <tr class="bg-highlight">
-                            <td class="col-time">٥٠</td>
-                            <td class="col-curriculum">الحفظ</td>
-                            <td class="col-topic">
-                                <div class="info-row">
-                                    <label>سورة</label> <input type="text" class="input-line" style="flex-grow: 1;">
-                                    <label style="margin-right:10px">صفحة رقم</label> <span style="margin:0 5px">(</span> 
-                                    <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
-                                    <span style="margin:0 5px">)</span>
-                                </div>
-                                <div class="info-row">
-                                    <span style="margin:0 5px">(</span> <label>إلى</label> 
-                                    <input type="text" class="input-inline" style="width: 60px; border-bottom: 1px dotted #3e2723;"> 
-                                    <span style="margin:0 5px">)</span>
-                                    <span style="margin:0 5px">(</span> <label>الآيات من</label> 
-                                    <input type="text" class="input-inline" style="width: 60px; border-bottom: 1px dotted #3e2723;"> 
-                                    <span style="margin:0 5px">)</span>
-                                </div>
-                                
-                                <div style="margin-top: 10px;">
-                                    <label style="font-weight: bold; display: block; margin-bottom: 2px;">بعض معاني الكلمات :</label>
-                                    <input type="text" class="input-line" style="margin-bottom: 5px;">
-                                    <input type="text" class="input-line">
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
+                <table class="info-table">
+                    <tr>
+                        <td width="15%"><label>رقم المجموعة:</label></td>
+                        <td width="35%">
+                            <div style="display:flex;align-items:center;">
+                                <input type="text" class="input-line input-group-num" style="flex-grow:1;">
+                                <span style="margin:0 5px;font-weight:bold;">(</span>
+                                <input type="text" class="input-inline" style="width:50px;">
+                                <span style="margin:0 5px;font-weight:bold;">)</span>
+                            </div>
+                        </td>
+                        <td width="15%"><label>اسم المجموعة:</label></td>
+                        <td width="35%">
+                            <div style="display:flex;align-items:center;">
+                                <span style="margin:0 5px;font-weight:bold;">(</span>
+                                <input type="text" class="input-line input-group-name" style="flex-grow:1;">
+                                <span style="margin:0 5px;font-weight:bold;">)</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>الفرقة:</label></td>
+                        <td>
+                            <div style="display:flex;align-items:center;">
+                                <input type="text" class="input-line input-group-div" style="flex-grow:1;">
+                                <span style="margin:0 5px;font-weight:bold;">:</span>
+                            </div>
+                        </td>
+                        <td><label>المستوى:</label></td>
+                        <td>
+                            <div style="display:flex;align-items:center;">
+                                <span style="margin:0 5px;font-weight:bold;">:</span>
+                                <input type="text" class="input-line input-group-level" style="flex-grow:1;">
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Added Teacher Row with improved styling -->
+                    <tr>
+                        <td style="padding-top: 10px;"><label>معلم الحلقة:</label></td>
+                        <td colspan="3" style="padding-top: 10px;">
+                            <input type="text" class="input-line input-teacher-name" style="width:100%; border-bottom: 1px dotted var(--primary-color);">
+                        </td>
+                    </tr>
                 </table>
 
-                <!-- Next Lesson -->
-                <div class="next-lesson-container">
-                    <div class="next-lesson-header">منهج الحصة القادمة إن شاء الله</div>
+                <div class="date-box">
+                        <div class="date-row">
+                            <div class="date-cell"><label>اليوم /</label></div>
+                            <div class="date-cell" style="width:25%"><input type="text" class="input-line input-day-name" style="width:100%"></div>
+                            <div class="date-cell"><label>التاريخ:</label></div>
+                            <div class="date-cell" style="text-align:left;"><span>/</span><input type="text" class="input-inline input-h-day" style="width:40px;"><span>/</span><span>14 هـ</span></div>
+                            <div class="date-cell"><label>الموافق</label></div>
+                            <div class="date-cell" style="text-align:left;"><span>/</span><input type="text" class="input-inline input-g-day" style="width:40px;"><span>/</span><span>20 م</span></div>
+                        </div>
+                        <div class="date-row">
+                            <div class="date-cell"><label>الفترة /</label></div>
+                            <div class="date-cell"><input type="text" class="input-line" style="width:100%"></div>
+                            <div class="date-cell"><label>من الساعة</label></div>
+                            <div class="date-cell"><input type="text" class="input-line" style="width:100%"></div>
+                            <div class="date-cell"><label>إلى الساعة</label></div>
+                            <div class="date-cell"><input type="text" class="input-line" style="width:100%"></div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:center;position:relative;">
+                        <div class="main-title editable-label" ondblclick="makeEditable(this)">منهج حصة اليوم</div>
+                        <div class="rating-stars" style="position:absolute;left:10px;"><span class="star" onclick="rate(1,this)">★</span><span class="star" onclick="rate(2,this)">★</span><span class="star" onclick="rate(3,this)">★</span><span class="star" onclick="rate(4,this)">★</span><span class="star" onclick="rate(5,this)">★</span></div>
+                    </div>
                     
-                    <div class="next-lesson-row">
-                        <div class="nl-label">الحفظ</div>
-                        <div class="nl-content">
-                            <div class="info-row">
-                                <label>سورة</label> <input type="text" class="input-line" style="flex-grow: 1;">
-                                <span style="margin:0 5px">(</span> <label>الآيات من</label> 
-                                <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
-                                <span style="margin:0 5px">)</span>
-                                <span style="margin:0 5px">(</span> <label>إلى</label> 
-                                <input type="text" class="input-inline" style="width: 40px; border-bottom: 1px dotted #3e2723;"> 
-                                <span style="margin:0 5px">)</span>
-                            </div>
-                        </div>
+                    <table class="curriculum-table">
+                        <thead><tr><th class="col-time">الزمن<br>بالدقيقة</th><th class="col-curriculum">المنهج</th><th class="col-topic">الموضوع</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-time clickable-time" onclick="startTimer(5)">٥</td>
+                                <td colspan="2" style="border-bottom:1px solid var(--primary-color);padding:5px;vertical-align:middle;">
+                                    <div style="display:flex;align-items:center;width:100%;white-space:nowrap;">
+                                        <span class="editable-label" ondblclick="makeEditable(this)" style="font-weight:bold;margin-left:10px;">كتابة السبورة - أخذ الغياب</span>
+                                        <span style="margin:0 5px;">العدد (</span>
+                                        <label style="font-size:12px;">كلي:</label><input type="number" class="input-inline input-total" oninput="calculateAttendance(this)" style="width:40px;">
+                                        <span style="margin:0 5px;">/ حاضر:</span><input type="number" class="input-inline input-present" oninput="calculateAttendance(this)" style="width:40px;">
+                                        <span style="margin:0 5px;">/ غائب:</span><input type="number" class="input-inline input-absent" readonly style="width:40px;color:red;">
+                                        <span>)</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr><td class="col-time clickable-time" onclick="startTimer(15)">١٥</td><td class="col-curriculum editable-label" ondblclick="makeEditable(this)">الأحكام</td><td class="col-topic"><div style="font-weight:bold;margin-bottom:5px;" class="editable-label" ondblclick="makeEditable(this)">عناصر الدرس :</div><input type="text" class="input-line" style="margin-bottom:5px;"><input type="text" class="input-line"></td></tr>
+                            <tr><td class="col-time clickable-time" onclick="startTimer(50)">٥٠</td><td class="col-curriculum"><div class="editable-label" ondblclick="makeEditable(this)">المراجعة</div><div style="border-top:1px solid var(--primary-color);margin:4px 0;"></div><div class="editable-label" ondblclick="makeEditable(this)">تسميع</div></td><td class="col-topic"><input type="text" class="input-line" style="margin-bottom:5px;"><input type="text" class="input-line"></td></tr>
+                            <tr class="bg-highlight">
+                                <td class="col-time clickable-time" onclick="startTimer(50)">٥٠</td><td class="col-curriculum editable-label" ondblclick="makeEditable(this)">الحفظ</td>
+                                <td class="col-topic">
+                                    <div class="info-row"><label>سورة</label><input type="text" class="input-line surah-input" list="surah-list" style="flex-grow:1;"><button class="preview-btn" onclick="openQuranPreview(this)"><i class="ph ph-eye"></i></button><label style="margin-right:10px;">صفحة رقم</label><span style="margin:0 5px;">(</span><input type="text" class="input-inline" style="width:40px;"><span style="margin:0 5px;">)</span></div>
+                                    <div class="info-row"><span style="margin:0 5px;">(</span><label>إلى</label><input type="text" class="input-inline" style="width:60px;"><span style="margin:0 5px;">)</span><span style="margin:0 5px;">(</span><label>الآيات من</label><input type="text" class="input-inline" style="width:60px;"><span style="margin:0 5px;">)</span></div>
+                                    <div style="margin-top:10px;"><label style="font-weight:bold;display:block;margin-bottom:2px;" class="editable-label" ondblclick="makeEditable(this)">بعض معاني الكلمات :</label><input type="text" class="input-line" style="margin-bottom:5px;"><input type="text" class="input-line"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="next-lesson-container">
+                        <div class="next-lesson-header editable-label" ondblclick="makeEditable(this)">منهج الحصة القادمة إن شاء الله</div>
+                        <div class="next-lesson-row"><div class="nl-label editable-label" ondblclick="makeEditable(this)">الحفظ</div><div class="nl-content"><div class="info-row"><label>سورة</label><input type="text" class="input-line surah-input" list="surah-list" style="flex-grow:1;"><span style="margin:0 5px;">(</span><label>الآيات من</label><input type="text" class="input-inline" style="width:40px;"><span style="margin:0 5px;">)</span><span style="margin:0 5px;">(</span><label>إلى</label><input type="text" class="input-inline" style="width:40px;"><span style="margin:0 5px;">)</span></div></div></div>
+                        <div class="next-lesson-row"><div class="nl-label editable-label" ondblclick="makeEditable(this)">المراجعة</div><div class="nl-content"><input type="text" class="input-line" style="margin-top:2px;"></div></div>
+                        <div class="next-lesson-row"><div class="nl-label editable-label" ondblclick="makeEditable(this)">الأحكام</div><div class="nl-content"><input type="text" class="input-line" style="margin-top:2px;"></div></div>
                     </div>
 
-                    <div class="next-lesson-row">
-                        <div class="nl-label">المراجعة</div>
-                        <div class="nl-content">
-                            <input type="text" class="input-line" style="margin-top: 2px;">
-                        </div>
-                    </div>
-
-                    <div class="next-lesson-row">
-                        <div class="nl-label">الأحكام</div>
-                        <div class="nl-content">
-                            <input type="text" class="input-line" style="margin-top: 2px;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Supervisor Box -->
-                <div class="supervisor-box">
-                    <div class="supervisor-title">توصيات المشرف الفني</div>
-                    <input type="text" class="input-line" style="margin-top: 10px; margin-bottom: 10px;">
-                    <input type="text" class="input-line">
-                    
-                    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                        <label style="font-weight: bold; margin-left: 10px;">توقيع المشرف الفني</label>
-                        <span>(</span> <input type="text" class="input-inline" style="width: 150px; border-bottom: 1px dotted #3e2723;"> <span>)</span>
+                    <div class="supervisor-box">
+                        <div class="supervisor-title editable-label" ondblclick="makeEditable(this)">توصيات المشرف الفني</div>
+                        <input type="text" class="input-line" style="margin-top:10px;margin-bottom:10px;"><input type="text" class="input-line">
+                        <div style="display:flex;justify-content:flex-end;margin-top:15px;align-items:flex-end;"><label style="font-weight:bold;margin-left:10px;">توقيع المشرف الفني</label><span>(</span><div class="signature-container"><canvas class="signature-canvas"></canvas><button class="clear-sig-btn" onclick="clearSignature(this)">X</button></div><span>)</span></div>
                     </div>
                 </div>
             </div>
@@ -521,133 +441,200 @@
     </div>
 
     <script>
-        // --- Functions ---
-
-        function addNewPage() {
+        const surahs=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
+        function initSurahList(){const l=document.getElementById('surah-list');surahs.forEach(s=>{const o=document.createElement('option');o.value=s;l.appendChild(o)});}
+        
+        // Responsive Scaling
+        function fitToScreen() {
             const container = document.getElementById('pages-container');
-            const template = document.getElementById('page-template');
+            const page = document.querySelector('.page');
+            const availableWidth = window.innerWidth - 40; // 20px padding each side
+            const pageWidth = 794; // approx 210mm in pixels at 96dpi
             
-            // استنساخ الصفحة
-            const newPage = template.cloneNode(true);
-            
-            // مسح المدخلات في الصفحة الجديدة
-            const inputs = newPage.querySelectorAll('input');
-            inputs.forEach(input => input.value = '');
-            
-            // إظهار زر الحذف
-            newPage.querySelector('.delete-page-btn').style.display = 'flex';
-            
-            // تعيين معرف جديد لضمان عدم التكرار (اختياري، ليس ضرورياً للوظائف البسيطة)
-            newPage.id = 'page-' + Date.now();
-            
-            container.appendChild(newPage);
-            updateDeleteButtons();
-            
-            // التمرير للأسفل
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-
-        function deletePage(btn) {
-            if(confirm('هل أنت متأكد من حذف هذه الصفحة؟')) {
-                btn.closest('.page-wrapper').remove();
-                updateDeleteButtons();
-            }
-        }
-
-        function updateDeleteButtons() {
-            const pages = document.querySelectorAll('.page-wrapper');
-            // إذا كانت صفحة واحدة فقط، نخفي زر الحذف
-            if (pages.length === 1) {
-                pages[0].querySelector('.delete-page-btn').style.display = 'none';
+            // Only scale down if screen is smaller than page
+            if (availableWidth < pageWidth) {
+                const scale = availableWidth / pageWidth;
+                container.style.transform = `scale(${scale})`;
+                // Adjust height to remove dead space
+                // (pageHeight * scale) - pageHeight
+                // Just let CSS margin handle it roughly, or calculate:
+                container.style.marginBottom = `-${(1 - scale) * 1122}px`; // 1122 is approx height
             } else {
-                pages.forEach(page => {
-                    page.querySelector('.delete-page-btn').style.display = 'flex';
-                });
+                container.style.transform = 'scale(1)';
+                container.style.marginBottom = '0';
             }
         }
+        window.addEventListener('resize', fitToScreen);
 
-        function clearAll() {
-            if(confirm('هل تريد مسح جميع البيانات؟')) {
-                const inputs = document.querySelectorAll('input');
-                inputs.forEach(input => input.value = '');
-            }
-        }
-
-        function saveToLocal() {
-            const pagesData = [];
-            const pages = document.querySelectorAll('.page-wrapper');
-            
-            pages.forEach(page => {
-                const inputs = page.querySelectorAll('input');
-                const pageValues = [];
-                inputs.forEach(input => pageValues.push(input.value));
-                pagesData.push(pageValues);
+        // Sidebar Toggle
+        function toggleSidebar(id) {
+            document.querySelectorAll('.sidebar-panel, .settings-panel').forEach(s => { 
+                if(s.id !== id) s.classList.remove('active'); 
             });
-            
-            localStorage.setItem('quranLessonPlanData', JSON.stringify(pagesData));
-            alert('تم الحفظ بنجاح! يمكنك استرجاع البيانات لاحقاً.');
+            const s = document.getElementById(id);
+            if(s) s.classList.toggle('active');
+            if(id === 'history-sidebar' && s.classList.contains('active')) loadHistoryList();
+            if(id === 'todo-sidebar' && s.classList.contains('active')) loadTodos();
         }
 
-        function loadFromLocal() {
-            const data = localStorage.getItem('quranLessonPlanData');
-            if (!data) {
-                alert('لا توجد بيانات محفوظة مسبقاً.');
-                return;
+        // --- Functions from before (condensed) ---
+        function setTheme(t){document.body.className='';if(t!=='default')document.body.classList.add(`theme-${t}`);}
+        function togglePresentationMode(){
+            document.body.classList.toggle('presentation-mode');
+            if(document.body.classList.contains('presentation-mode')){ if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{}); }
+            else{ if(document.exitFullscreen && document.fullscreenElement)document.exitFullscreen().catch(()=>{}); }
+        }
+        document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('presentation-mode');});
+        
+        // تم حذف دوال التجويد (toggleTajweed, switchTajweedTab)
+
+        function toggleCounter(){const c=document.getElementById('counter-overlay');c.style.display=c.style.display==='flex'?'none':'flex';}
+        let count=0; function updateCounter(v){if(v===0)count=0;else count+=v;if(count<0)count=0;document.getElementById('counter-display').innerText=count;}
+        let timerInt, timeLeft=0;
+        function startTimer(m){clearInterval(timerInt);timeLeft=m*60;updTm();document.getElementById('timer-overlay').style.display='flex';timerInt=setInterval(()=>{if(timeLeft>0){timeLeft--;updTm();}else{clearInterval(timerInt);alert('انتهى الوقت!');}},1000);}
+        function updTm(){const m=Math.floor(timeLeft/60),s=timeLeft%60;document.getElementById('timer-display').innerText=`${m<10?'0'+m:m}:${s<10?'0'+s:s}`;}
+        function pauseTimer(){if(timerInt){clearInterval(timerInt);timerInt=null;}else if(timeLeft>0)startTimer(timeLeft/60);}
+        function stopTimer(){clearInterval(timerInt);document.getElementById('timer-overlay').style.display='none';}
+        function toggleStamps(){document.getElementById('stamps-sidebar').classList.toggle('active');}
+        function dragStamp(ev,t,c){ev.dataTransfer.setData("t",t);ev.dataTransfer.setData("c",c);}
+        function allowDrop(ev){ev.preventDefault();}
+        function dropStamp(ev){ ev.preventDefault(); const t=ev.dataTransfer.getData("t"), c=ev.dataTransfer.getData("c"); if(!t)return;
+            const s=document.createElement("div"); s.className=`stamp-instance ${c}`; s.innerText=t;
+            const r=ev.currentTarget.getBoundingClientRect(); s.style.left=(ev.clientX-r.left)+"px"; s.style.top=(ev.clientY-r.top)+"px"; // Simplified pos for scale
+            const b=document.createElement("button"); b.className="delete-stamp-btn"; b.innerText="X"; b.onclick=()=>s.remove(); s.appendChild(b);
+            let p1=0,p2=0,p3=0,p4=0; s.onmousedown=e=>{if(e.target.tagName==='BUTTON')return;e.preventDefault();p3=e.clientX;p4=e.clientY;document.onmouseup=()=>{document.onmouseup=null;document.onmousemove=null;};document.onmousemove=ev2=>{ev2.preventDefault();p1=p3-ev2.clientX;p2=p4-ev2.clientY;p3=ev2.clientX;p4=ev2.clientY;s.style.top=(s.offsetTop-p2)+"px";s.style.left=(s.offsetLeft-p1)+"px";}};
+            ev.currentTarget.appendChild(s);
+        }
+        function toggleDrawingMode() {
+            const page=document.querySelector('.page-wrapper:last-child .page'); if(!page)return;
+            let c=page.querySelector('.drawing-canvas'); 
+            c.width=page.offsetWidth; c.height=page.offsetHeight;
+            c.classList.toggle('active');
+            if(c.classList.contains('active')){
+                const ctx=c.getContext('2d'); ctx.strokeStyle="rgba(255,0,0,0.5)"; ctx.lineWidth=5; ctx.lineCap="round";
+                let d=false;
+                const gp=e=>{const r=c.getBoundingClientRect(); return{x:(e.clientX-r.left),y:(e.clientY-r.top)}};
+                c.onmousedown=e=>{d=true;const p=gp(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+                c.onmousemove=e=>{if(d){const p=gp(e);ctx.lineTo(p.x,p.y);ctx.stroke();}};
+                c.onmouseup=()=>d=false;
             }
-            
-            if(confirm('سيتم استبدال الصفحة الحالية بالبيانات المحفوظة. هل أنت موافق؟')) {
-                const pagesData = JSON.parse(data);
-                const container = document.getElementById('pages-container');
-                const template = document.getElementById('page-template'); // القالب الأصلي
-                
-                // مسح كل الصفحات الحالية ما عدا الأولى (لأننا سنعيد البناء)
-                // الأفضل: تفريغ الحاوية ثم إعادة الإنشاء
-                container.innerHTML = '';
-                
-                pagesData.forEach((pageValues, index) => {
-                    const newPage = template.cloneNode(true);
-                    newPage.id = 'page-loaded-' + index;
-                    
-                    const inputs = newPage.querySelectorAll('input');
-                    pageValues.forEach((val, i) => {
-                        if(inputs[i]) inputs[i].value = val;
-                    });
-                    
-                    container.appendChild(newPage);
+        }
+        function addStickyNote(){
+            const c=document.querySelector('.page-wrapper:last-child .page'); if(!c)return;
+            const n=document.createElement('div'); n.className='sticky-note'; n.style.top='100px'; n.style.right='20px';
+            n.innerHTML='<textarea placeholder="..."></textarea><button class="sticky-close" onclick="this.parentElement.remove()">X</button>';
+            let d=false,sx,sy,il,it; n.onmousedown=e=>{if(e.target.tagName!=='TEXTAREA'&&e.target.tagName!=='BUTTON'){d=true;sx=e.clientX;sy=e.clientY;il=n.offsetLeft;it=n.offsetTop;}};
+            window.addEventListener('mousemove',e=>{if(d){n.style.left=(il+(e.clientX-sx))+'px';n.style.top=(it+(e.clientY-sy))+'px';}});
+            window.addEventListener('mouseup',()=>d=false); c.appendChild(n);
+        }
+        function loadTodos() {
+            const l=document.getElementById('todo-list'); const t=JSON.parse(localStorage.getItem('qTodos')||'[]'); l.innerHTML='';
+            t.forEach((o,i)=>{const li=document.createElement('li');li.className='todo-item '+(o.d?'completed':'');li.innerHTML=`<input type="checkbox" ${o.d?'checked':''} onchange="togTodo(${i})"><span>${o.t}</span><button style="margin-right:auto;color:red;border:none;background:none;cursor:pointer;" onclick="delTodo(${i})">✕</button>`;l.appendChild(li);});
+        }
+        function addTodo(){const i=document.getElementById('new-todo');if(!i.value)return;const t=JSON.parse(localStorage.getItem('qTodos')||'[]');t.push({t:i.value,d:false});localStorage.setItem('qTodos',JSON.stringify(t));i.value='';loadTodos();}
+        function togTodo(i){const t=JSON.parse(localStorage.getItem('qTodos'));t[i].d=!t[i].d;localStorage.setItem('qTodos',JSON.stringify(t));loadTodos();}
+        function delTodo(i){const t=JSON.parse(localStorage.getItem('qTodos'));t.splice(i,1);localStorage.setItem('qTodos',JSON.stringify(t));loadTodos();}
+        function rate(s,e){const p=e.parentElement;p.querySelectorAll('.star').forEach((x,i)=>x.classList.toggle('active',i<s));p.setAttribute('data-rating',s);}
+        function setDates(p){const d=new Date(), h=new Intl.DateTimeFormat('ar-EG-u-ca-islamic',{day:'numeric',month:'numeric'}).formatToParts(d); p.querySelector('.input-day-name').value=new Intl.DateTimeFormat('ar-EG',{weekday:'long'}).format(d); p.querySelector('.input-h-day').value=`${h.find(x=>x.type=='day').value}/${h.find(x=>x.type=='month').value}`; p.querySelector('.input-g-day').value=`${d.getDate()}/${d.getMonth()+1}`;}
+        function calculateAttendance(i){const r=i.closest('div'), t=parseInt(r.querySelector('.input-total').value)||0, p=parseInt(r.querySelector('.input-present').value)||0; r.querySelector('.input-absent').value=(t>0&&r.querySelector('.input-present').value!=="")?Math.max(0,t-p):'';}
+        function openQuranPreview(b){const v=b.previousElementSibling.value, i=surahs.indexOf(v)+1; if(i>0)window.open(`https://quran.com/${i}`,'_blank'); else alert('اختر سورة');}
+        function generateWhatsAppReport() {
+            const p=document.querySelector('.page-wrapper:last-child'); if(!p)return;
+            const g=p.querySelector('.input-group-name').value||"مجموعة"; const d=p.querySelector('.input-g-day').value||"";
+            const pr=p.querySelector('.input-present').value||"0"; const ab=p.querySelector('.input-absent').value||"0";
+            const s=p.querySelector('.surah-input').value||"-";
+            const txt=`📋 *تقرير الحصة*\n📌 المجموعة: ${g}\n📅 التاريخ: ${d}\n👥 حضور: ${pr} | غياب: ${ab}\n📖 تم حفظ: ${s}`;
+            navigator.clipboard.writeText(txt).then(()=>alert("تم النسخ!")).catch(()=>prompt("انسخ:",txt));
+        }
+        function saveToLocal(){
+            const d=[]; document.querySelectorAll('.page-wrapper').forEach(p=>{
+                const i=[]; p.querySelectorAll('input,textarea').forEach(x=>i.push(x.value));
+                const s=[]; p.querySelectorAll('.stamp-instance').forEach(x=>s.push({t:x.innerText.replace('X',''),c:x.classList[1],l:x.style.left,tp:x.style.top}));
+                const n=[]; p.querySelectorAll('.sticky-note').forEach(x=>n.push({v:x.querySelector('textarea').value,l:x.style.left,tp:x.style.top}));
+                const r=p.querySelector('.rating-stars').getAttribute('data-rating')||0;
+                d.push({i, sig:p.querySelector('.signature-canvas').toDataURL(), s, n, rate:r});
+            }); localStorage.setItem('qData',JSON.stringify(d)); 
+            const arch=JSON.parse(localStorage.getItem('qArchive')||'[]');
+            arch.unshift({date:new Date().toLocaleString('ar-EG'), name:document.querySelector('.input-group-name').value||"مجموعة", data:d});
+            if(arch.length>20)arch.pop(); localStorage.setItem('qArchive',JSON.stringify(arch));
+            alert('تم الحفظ!');
+        }
+        function loadHistoryList(){
+            const l=document.getElementById('history-list'), a=JSON.parse(localStorage.getItem('qArchive')||'[]'); l.innerHTML='';
+            if(a.length===0){l.innerHTML='<div style="padding:10px;text-align:center;">فارغ</div>';return;}
+            a.forEach((x,i)=>{const d=document.createElement('div');d.className='history-item';d.innerHTML=`<div class="history-date">${x.date}</div><div class="history-group">${x.name}</div>`;d.onclick=()=>restoreSnapshot(i);l.appendChild(d);});
+        }
+        function restoreSnapshot(idx){
+            if(!confirm("استعادة؟"))return; const d=JSON.parse(localStorage.getItem('qArchive'))[idx].data;
+            document.getElementById('pages-container').innerHTML='';
+            d.forEach(r=>{
+                addNewPage(); const p=document.querySelector('.page-wrapper:last-child'), inps=p.querySelectorAll('input,textarea');
+                r.i.forEach((v,k)=>{if(inps[k])inps[k].value=v});
+                const img=new Image(); img.onload=()=>p.querySelector('.signature-canvas').getContext('2d').drawImage(img,0,0); img.src=r.sig;
+                if(r.s)r.s.forEach(x=>{
+                    const s=document.createElement('div');s.className=`stamp-instance ${x.c}`;s.innerText=x.t;s.style.left=x.l;s.style.top=x.tp;
+                    const b=document.createElement('button');b.className='delete-stamp-btn';b.innerText='X';b.onclick=()=>s.remove();s.appendChild(b);
+                    p.querySelector('.page').appendChild(s);
                 });
-                
-                updateDeleteButtons();
-            }
+                if(r.n)r.n.forEach(x=>{const n=document.createElement('div');n.className='sticky-note';n.style.left=x.l;n.style.top=x.tp;n.innerHTML=`<textarea>${x.v}</textarea><button class="sticky-close" onclick="this.parentElement.remove()">X</button>`;p.querySelector('.page').appendChild(n);});
+                if(r.rate)rate(r.rate,p.querySelector('.rating-stars .star'));
+            }); toggleSidebar('history-sidebar');
         }
-
-        function exportPDF() {
-            // استخدام نافذة الطباعة الافتراضية لأنها الأفضل في التعامل مع CSS Vector
-            window.print();
-        }
-
-        function exportPNG() {
-            // نخفي أزرار الحذف مؤقتاً
-            const deleteBtns = document.querySelectorAll('.delete-page-btn');
-            deleteBtns.forEach(b => b.style.display = 'none');
-
-            // نأخذ الصفحة الأولى فقط كمثال، أو الصفحة النشطة
-            const element = document.querySelector('.page'); // يأخذ أول صفحة
-            
-            html2canvas(element, {
-                scale: 2, // دقة عالية
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null // شفاف ليأخذ لون الصفحة
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'lesson-plan.png';
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-                
-                // إعادة إظهار الأزرار
-                updateDeleteButtons();
+        function loadFromLocal(){
+            const d=localStorage.getItem('qData'); if(!d)return alert('لا يوجد'); if(!confirm('استرجاع؟'))return;
+            document.getElementById('pages-container').innerHTML=''; JSON.parse(d).forEach(r=>{
+                addNewPage(); const p=document.querySelector('.page-wrapper:last-child'), inps=p.querySelectorAll('input,textarea');
+                r.i.forEach((v,k)=>{if(inps[k])inps[k].value=v});
+                const img=new Image(); img.onload=()=>p.querySelector('.signature-canvas').getContext('2d').drawImage(img,0,0); img.src=r.sig;
+                if(r.s)r.s.forEach(x=>{
+                    const s=document.createElement('div');s.className=`stamp-instance ${x.c}`;s.innerText=x.t;s.style.left=x.l;s.style.top=x.tp;
+                    const b=document.createElement('button');b.className='delete-stamp-btn';b.innerText='X';b.onclick=()=>s.remove();s.appendChild(b);
+                    p.querySelector('.page').appendChild(s);
+                });
+                if(r.n)r.n.forEach(x=>{const n=document.createElement('div');n.className='sticky-note';n.style.left=x.l;n.style.top=x.tp;n.innerHTML=`<textarea>${x.v}</textarea><button class="sticky-close" onclick="this.parentElement.remove()">X</button>`;p.querySelector('.page').appendChild(n);});
+                if(r.rate)rate(r.rate,p.querySelector('.rating-stars .star'));
             });
         }
+        function saveGroupPreset(){const p=document.querySelector('.page-wrapper'), n=prompt('اسم المجموعة:',p.querySelector('.input-group-name').value); if(n){const g=JSON.parse(localStorage.getItem('qGroups')||'[]'); g.push({n,d:{gn:p.querySelector('.input-group-num').value, gd:p.querySelector('.input-group-div').value, gna:p.querySelector('.input-group-name').value, gl:p.querySelector('.input-group-level').value, t:p.querySelector('.input-total').value}}); localStorage.setItem('qGroups',JSON.stringify(g)); initGroups();}}
+        function initGroups(){const s=document.getElementById('group-preset-select'); s.innerHTML='<option value="">-- مجموعة --</option>'; JSON.parse(localStorage.getItem('qGroups')||'[]').forEach((g,i)=>{const o=document.createElement('option');o.value=i;o.innerText=g.n;s.appendChild(o)});}
+        function applyGroupPreset(s){if(s.value==='')return;const g=JSON.parse(localStorage.getItem('qGroups'))[s.value].d; document.querySelectorAll('.page-wrapper').forEach(p=>{p.querySelector('.input-group-num').value=g.gn;p.querySelector('.input-group-div').value=g.gd;p.querySelector('.input-group-name').value=g.gna;p.querySelector('.input-group-level').value=g.gl;p.querySelector('.input-total').value=g.t;});}
+        function exportBackup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({d:localStorage.getItem('qData'),g:localStorage.getItem('qGroups'),a:localStorage.getItem('qArchive'),t:localStorage.getItem('qTodos')})],{type:'application/json'}));a.download='backup.json';a.click();}
+        function triggerImport(){document.getElementById('restore-input').click();}
+        function importBackup(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.d)localStorage.setItem('qData',d.d);if(d.g)localStorage.setItem('qGroups',d.g);if(d.a)localStorage.setItem('qArchive',d.a);if(d.t)localStorage.setItem('qTodos',d.t);location.reload();}catch(x){alert('خطأ');}};r.readAsText(f);}
+        function exportPDF(){window.print();}
+        function exportPNG(){
+            document.querySelectorAll('.delete-page-btn, .clear-sig-btn, .delete-stamp-btn, .sticky-close, .preview-btn').forEach(b=>b.style.display='none');
+            html2canvas(document.querySelector('.page'),{scale:2,useCORS:true}).then(c=>{const a=document.createElement('a');a.download='lesson.png';a.href=c.toDataURL();a.click();document.querySelectorAll('.delete-page-btn, .clear-sig-btn, .sticky-close, .preview-btn').forEach(b=>b.style.display='');});
+        }
+        function toggleSpeech(){
+            const b=document.getElementById('mic-btn'); if(!('webkitSpeechRecognition'in window))return alert('غير مدعوم');
+            if(b.classList.contains('btn-recording')){rec.stop();b.classList.remove('btn-recording');return;}
+            rec=new webkitSpeechRecognition(); rec.lang='ar-EG'; rec.onstart=()=>b.classList.add('btn-recording'); rec.onend=()=>b.classList.remove('btn-recording');
+            rec.onresult=e=>{if(activeInp)activeInp.value+=' '+e.results[0][0].transcript;}; rec.start();
+        }
+        let activeInp; document.addEventListener('focusin',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')activeInp=e.target;});
+        function addNewPage(){
+            const t=document.getElementById('page-template'), n=t.cloneNode(true); n.id='p-'+Date.now();
+            n.querySelector('.delete-page-btn').style.display='flex'; n.querySelectorAll('input').forEach(i=>i.value='');
+            n.querySelectorAll('.stamp-instance, .sticky-note').forEach(x=>x.remove());
+            n.querySelector('.rating-stars').setAttribute('data-rating', 0); n.querySelectorAll('.star').forEach(s=>s.classList.remove('active'));
+            const c=n.querySelector('.signature-canvas'); c.getContext('2d').clearRect(0,0,c.width,c.height);
+            document.getElementById('pages-container').appendChild(n); setDates(n); initSig(c); 
+            const del=document.querySelectorAll('.delete-page-btn'); del[0].style.display=del.length>1?'flex':'none';
+            window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); fitToScreen();
+        }
+        function deletePage(b){if(confirm('حذف؟')){b.closest('.page-wrapper').remove();const del=document.querySelectorAll('.delete-page-btn');del[0].style.display=del.length>1?'flex':'none';}}
+        function clearAll(){if(confirm('مسح؟')){document.querySelectorAll('input,textarea').forEach(i=>i.value='');document.querySelectorAll('.stamp-instance,.sticky-note').forEach(x=>x.remove());document.querySelectorAll('canvas').forEach(c=>c.getContext('2d').clearRect(0,0,1000,1000));document.querySelectorAll('.star').forEach(s=>s.classList.remove('active'));}}
+        function initSig(c){
+            const x=c.getContext('2d'); x.strokeStyle="#1a237e"; x.lineWidth=2; c.width=c.parentElement.offsetWidth; c.height=c.parentElement.offsetHeight;
+            let d=false; const gp=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX||e.touches[0].clientX)-r.left,y:(e.clientY||e.touches[0].clientY)-r.top}};
+            c.onmousedown=e=>{d=true;x.beginPath();x.moveTo(gp(e).x,gp(e).y);}; c.onmousemove=e=>{if(d){x.lineTo(gp(e).x,gp(e).y);x.stroke();}}; c.onmouseup=()=>d=false;
+            c.ontouchstart=e=>{d=true;const p=gp(e);x.beginPath();x.moveTo(p.x,p.y);e.preventDefault();};c.ontouchmove=e=>{if(d){const p=gp(e);x.lineTo(p.x,p.y);x.stroke();e.preventDefault();}};c.ontouchend=()=>d=false;
+        }
+        function clearSignature(b){b.parentElement.querySelector('canvas').getContext('2d').clearRect(0,0,1000,1000);}
+        function makeEditable(el) { el.contentEditable = true; el.focus(); el.onblur = function() { el.contentEditable = false; }; el.onkeydown = function(e) { if(e.key === 'Enter') { e.preventDefault(); el.blur(); } }; }
+
+        window.onload=()=>{initSurahList();initGroups();const f=document.querySelector('.page-wrapper');setDates(f);initSig(f.querySelector('.signature-canvas')); fitToScreen();};
     </script>
 </body>
 </html>
